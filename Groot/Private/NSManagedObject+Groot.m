@@ -27,6 +27,7 @@
 
 #import "NSPropertyDescription+Groot.h"
 #import "NSAttributeDescription+Groot.h"
+#import "NSRelationshipDescription+Groot.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -199,6 +200,7 @@ NS_ASSUME_NONNULL_BEGIN
         GRTManagedObjectSerializer *serializer = [[GRTManagedObjectSerializer alloc] initWithEntity:destinationEntity];
         
         BOOL isArray = [rawValue isKindOfClass:[NSArray class]];
+        BOOL incompleteRelationship = [relationship grt_isAnIncompleteRelationship];
         NSError *error = nil;
         
         if (relationship.toMany && isArray) {
@@ -207,7 +209,21 @@ NS_ASSUME_NONNULL_BEGIN
                                                                error:&error];
             
             if (managedObjects != nil) {
-                value = relationship.ordered ? [NSOrderedSet orderedSetWithArray:managedObjects] : [NSSet setWithArray:managedObjects];
+                if (incompleteRelationship) {
+                    if (relationship.ordered) {
+                        NSMutableOrderedSet *set = [self mutableOrderedSetValueForKey:relationship.name];
+                        [set addObjectsFromArray:managedObjects];
+                        value = set;
+                    }
+                    else {
+                        NSMutableSet *set = [self mutableSetValueForKey:relationship.name];
+                        [set addObjectsFromArray:managedObjects];
+                        value = set;
+                    }
+                }
+                else {
+                    value = relationship.ordered ? [NSOrderedSet orderedSetWithArray:managedObjects] : [NSSet setWithArray:managedObjects];
+                }
             }
         }
         else if (!relationship.toMany && !isArray) {
