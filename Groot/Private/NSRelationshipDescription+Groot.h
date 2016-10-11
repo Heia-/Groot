@@ -29,4 +29,10 @@
  */
 - (BOOL)grt_isAnIncompleteRelationship;
 
+/**
+ Returns the given array of `NSManagedObject`s with all objects that are already in the relationship removed
+ */
+- (nullable NSArray<NSManagedObject*>*)grt_objectsNotInRelationship:(nonnull NSArray <NSManagedObject*> *)objects
+                                                            context:(nonnull NSManagedObjectContext *)context;
+
 @end

@@ -210,16 +210,11 @@ NS_ASSUME_NONNULL_BEGIN
             
             if (managedObjects != nil) {
                 if (incompleteRelationship) {
-                    if (relationship.ordered) {
-                        NSMutableOrderedSet *set = [self mutableOrderedSetValueForKey:relationship.name];
-                        [set addObjectsFromArray:managedObjects];
-                        value = set;
-                    }
-                    else {
-                        NSMutableSet *set = [self mutableSetValueForKey:relationship.name];
-                        [set addObjectsFromArray:managedObjects];
-                        value = set;
-                    }
+                    id set = (relationship.ordered ? [self mutableOrderedSetValueForKey:relationship.name] : [self mutableSetValueForKey:relationship.name]);
+                    managedObjects = [relationship grt_objectsNotInRelationship:managedObjects context:self.managedObjectContext];
+                    
+                    [set addObjectsFromArray:managedObjects];
+                    value = set;
                 }
                 else {
                     value = relationship.ordered ? [NSOrderedSet orderedSetWithArray:managedObjects] : [NSSet setWithArray:managedObjects];
